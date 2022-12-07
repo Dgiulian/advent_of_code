@@ -103,14 +103,6 @@ async function partTwo(fileName) {
   let totalScore = 0;
   for (let round of rounds) {
     const sum = round.reduce((acum, play) => {
-      console.log({
-        play,
-        selectedShape: complement_shapes[play[0]][play[1]],
-        p: [play[0], complement_shapes[play[0]][play[1]]].join(""),
-        score:
-          scores[[play[0], complement_shapes[play[0]][play[1]]].join("")] +
-          shape_values[complement_shapes[play[0]][play[1]]],
-      });
       return (
         acum +
         scores[[play[0], complement_shapes[play[0]][play[1]]].join("")] +
