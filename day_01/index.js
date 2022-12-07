@@ -1,7 +1,4 @@
-const path = require("path");
 const fs = require("fs");
-
-fs.readFile;
 
 function getDeerCaloriesSum(deers) {
   return deers.map((deer) =>
