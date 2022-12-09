@@ -4,15 +4,24 @@ const fs = require("fs");
 const visitedPositions = new Set();
 
 /* @type string[][] */
+// const state = [21, 26];
 const state = [5, 6];
-const start = [0, 0];
+
 const ROW = 0;
 const COL = 1;
 
-const positions = {
-  head: [4, 0],
-  tail: [4, 0],
-};
+const positions = [
+  [4, 0],
+  [4, 0],
+  [4, 0],
+  [4, 0],
+  [4, 0],
+  [4, 0],
+  [4, 0],
+  [4, 0],
+  [4, 0],
+  [4, 0],
+];
 
 async function partOne(fileName) {
   const fileBuffer = await fs.promises.readFile(fileName);
@@ -32,38 +41,61 @@ async function partOne(fileName) {
   console.log(count);
 }
 
+async function partTwo(fileName) {
+  const fileBuffer = await fs.promises.readFile(fileName);
+  const file = fileBuffer.toString();
+  /* @type string[] */
+  const input = file.split("\n").filter((line) => line);
+  const movements = input
+    .map((line) => line.split(" "))
+    .map((line) => [line[0], parseInt(line[1])]);
+
+  for (let movement of movements) {
+    executeMovement(movement);
+    if (positions.length < 3) {
+      positions.push([4, 0]);
+      console.log(positions);
+    }
+  }
+
+  let count = 0;
+  visitedPositions.forEach((p) => count++);
+  console.log(count);
+}
+
 function executeMovement(movement) {
   const [dir, count] = movement;
   console.log(movement, "--->");
-
+  const head = positions[0];
   for (let i = 0; i < count; i++) {
     switch (dir) {
       case "U": {
-        positions.head[ROW] -= 1;
+        head[ROW] -= 1;
         break;
       }
       case "D": {
-        positions.head[ROW] += 1;
+        head[ROW] += 1;
         break;
       }
       case "L": {
-        positions.head[COL] -= 1;
+        head[COL] -= 1;
         break;
       }
       case "R": {
-        positions.head[COL] += 1;
+        head[COL] += 1;
         break;
       }
       default:
         throw new Error("Movement not handled", movement);
     }
-    updateTail();
+    for (let t = 1; t < positions.length; t++) {
+      updateTail(positions[t - 1], positions[t]);
+    }
+    debugState();
   }
 }
 
-function updateTail() {
-  const { head, tail } = positions;
-
+function updateTail(head, tail) {
   /* Is Same Row? */
 
   if (head[ROW] === tail[ROW]) {
@@ -114,27 +146,39 @@ function updateTail() {
       tail[COL] += 1;
     }
   }
-  visitedPositions.add(positions.tail.join(","));
-  debugState();
+  visitedPositions.add(positions[1].join(","));
 }
 
-function isEndPoint(
-  /* @type 'head' | 'tail' */ end,
+function isHead(/* @type number */ i, /* @type number */ j) {
+  return positions[0][0] === i && positions[0][1] === j;
+}
+function isTail(
+  /* @type [number, number] */ tail,
   /* @type number */ i,
   /* @type number */ j
 ) {
-  return positions[end][0] === i && positions[end][1] === j;
+  return tail[0] === i && tail[1] === j;
 }
+
 function debugState() {
   for (let i = 0; i < state[0]; i++) {
     let line = [];
-
+    let isOccupied = false;
     for (let j = 0; j < state[1]; j++) {
-      if (isEndPoint("head", i, j)) {
+      isOccupied = false;
+      if (isHead(i, j)) {
         line.push("H");
-      } else if (isEndPoint("tail", i, j)) {
-        line.push("T");
-      } else line.push(".");
+      } else {
+        for (let t = 1; t < positions.length; t++) {
+          if (!isOccupied && isTail(positions[t], i, j)) {
+            isOccupied = true;
+            line.push(t);
+          }
+        }
+        if (!isOccupied) {
+          line.push(".");
+        }
+      }
     }
 
     console.log([...line].join(""));
@@ -142,4 +186,5 @@ function debugState() {
   console.log("    ");
 }
 
-partOne("input_09_small.txt");
+// partOne("input_09_small.txt");
+partTwo("input_09_small.txt");
