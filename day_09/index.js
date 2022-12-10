@@ -1,7 +1,7 @@
 const fs = require("fs");
 
 /* @type Set<string> */
-const visitedPositions = new Set();
+let visitedPositions;
 
 const ROW = 0;
 const COL = 1;
@@ -25,6 +25,7 @@ async function partOne(fileName) {
   state = [5, 6];
   initialPosition = [4, 0];
   positions = [[...initialPosition], [...initialPosition]];
+  visitedPositions = new Set();
   const movements = await getMovements(fileName);
   for (let movement of movements) {
     executeMovement(movement);
@@ -32,6 +33,12 @@ async function partOne(fileName) {
   let count = 0;
   visitedPositions.forEach((p) => count++);
 
+  printMovements();
+
+  console.log(count);
+}
+
+function printMovements() {
   for (let i = 0; i < state[0]; i++) {
     const line = [];
     for (let j = 0; j < state[1]; j++) {
@@ -43,11 +50,10 @@ async function partOne(fileName) {
     }
     console.log(line.join(""));
   }
-
-  console.log(count);
 }
-
 async function partTwo(fileName) {
+  const movements = await getMovements(fileName);
+  visitedPositions = new Set();
   state = [21, 26];
   initialPosition = [15, 11];
   positions = [
@@ -62,7 +68,7 @@ async function partTwo(fileName) {
     [...initialPosition],
     [...initialPosition],
   ];
-  const movements = await getMovements(fileName);
+
   debugState();
   for (let movement of movements) {
     executeMovement(movement);
@@ -70,6 +76,10 @@ async function partTwo(fileName) {
 
   let count = 0;
   visitedPositions.forEach((p) => count++);
+  console.log(count);
+
+  printMovements();
+
   console.log(count);
 }
 
@@ -98,6 +108,7 @@ function executeMovement(movement) {
       default:
         throw new Error("Movement not handled", movement);
     }
+
     for (let t = 1; t < positions.length; t++) {
       updateTail(positions[t - 1], positions[t]);
       visitedPositions.add(positions[1].join(","));
@@ -107,7 +118,7 @@ function executeMovement(movement) {
   }
 }
 
-function updateTail(head, tail) {
+function updateTailOld(head, tail) {
   /* Is Same Row? */
 
   if (head[ROW] === tail[ROW]) {
@@ -160,6 +171,22 @@ function updateTail(head, tail) {
     }
   }
 }
+function updateTail(head, tail) {
+  /* Is Same Row? */
+  const dRow = head[ROW] - tail[ROW];
+  const dCol = head[COL] - tail[COL];
+
+  if (dRow === 0 && Math.abs(dCol) === 2) {
+    tail[COL] += Math.sign(dCol);
+    tail[ROW] += 0;
+  } else if (dCol === 0 && Math.abs(dRow) == 2) {
+    tail[COL] += 0;
+    tail[ROW] += Math.sign(dRow);
+  } else if (Math.hypot(dRow, dCol) > 2) {
+    tail[COL] += Math.sign(dCol);
+    tail[ROW] += Math.sign(dRow);
+  }
+}
 
 function isHead(/* @type number */ i, /* @type number */ j) {
   return positions[0][0] === i && positions[0][1] === j;
@@ -192,13 +219,12 @@ function debugState() {
         }
       }
     }
-
     console.log([...line].join(""));
   }
   console.log("    ");
 }
 
-partOne("input_09_small.txt");
+// partOne("input_09_small.txt");
 // partOne("input_09.txt");
 // partTwo("input_09_larger.txt");
-// partTwo("input_09.txt");
+partTwo("input_09.txt");
