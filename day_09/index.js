@@ -3,27 +3,15 @@ const fs = require("fs");
 /* @type Set<string> */
 const visitedPositions = new Set();
 
-/* @type string[][] */
-// const state = [21, 26];
-const state = [5, 6];
-
 const ROW = 0;
 const COL = 1;
 
-const positions = [
-  [4, 0],
-  [4, 0],
-  [4, 0],
-  [4, 0],
-  [4, 0],
-  [4, 0],
-  [4, 0],
-  [4, 0],
-  [4, 0],
-  [4, 0],
-];
+/* @type string[][] */
+let state;
+let initialPosition;
+let positions;
 
-async function partOne(fileName) {
+async function getMovements(fileName) {
   const fileBuffer = await fs.promises.readFile(fileName);
   const file = fileBuffer.toString();
   /* @type string[] */
@@ -31,31 +19,53 @@ async function partOne(fileName) {
   const movements = input
     .map((line) => line.split(" "))
     .map((line) => [line[0], parseInt(line[1])]);
-
+  return movements;
+}
+async function partOne(fileName) {
+  state = [5, 6];
+  initialPosition = [4, 0];
+  positions = [[...initialPosition], [...initialPosition]];
+  const movements = await getMovements(fileName);
   for (let movement of movements) {
     executeMovement(movement);
   }
-
   let count = 0;
   visitedPositions.forEach((p) => count++);
+
+  for (let i = 0; i < state[0]; i++) {
+    const line = [];
+    for (let j = 0; j < state[1]; j++) {
+      if (visitedPositions.has(`${i},${j}`)) {
+        line.push("#");
+      } else {
+        line.push(".");
+      }
+    }
+    console.log(line.join(""));
+  }
+
   console.log(count);
 }
 
 async function partTwo(fileName) {
-  const fileBuffer = await fs.promises.readFile(fileName);
-  const file = fileBuffer.toString();
-  /* @type string[] */
-  const input = file.split("\n").filter((line) => line);
-  const movements = input
-    .map((line) => line.split(" "))
-    .map((line) => [line[0], parseInt(line[1])]);
-
+  state = [21, 26];
+  initialPosition = [15, 11];
+  positions = [
+    [...initialPosition],
+    [...initialPosition],
+    [...initialPosition],
+    [...initialPosition],
+    [...initialPosition],
+    [...initialPosition],
+    [...initialPosition],
+    [...initialPosition],
+    [...initialPosition],
+    [...initialPosition],
+  ];
+  const movements = await getMovements(fileName);
+  debugState();
   for (let movement of movements) {
     executeMovement(movement);
-    if (positions.length < 3) {
-      positions.push([4, 0]);
-      console.log(positions);
-    }
   }
 
   let count = 0;
@@ -90,8 +100,10 @@ function executeMovement(movement) {
     }
     for (let t = 1; t < positions.length; t++) {
       updateTail(positions[t - 1], positions[t]);
+      visitedPositions.add(positions[1].join(","));
+      debugState();
     }
-    debugState();
+    // debugState();
   }
 }
 
@@ -114,6 +126,7 @@ function updateTail(head, tail) {
       tail[0] -= 1;
     }
   } else if (head[COL] + 1 === tail[COL]) {
+    /* TODO: Diagonals???? */
     if (head[ROW] + 2 === tail[ROW]) {
       tail[ROW] -= 1;
       tail[COL] -= 1;
@@ -146,7 +159,6 @@ function updateTail(head, tail) {
       tail[COL] += 1;
     }
   }
-  visitedPositions.add(positions[1].join(","));
 }
 
 function isHead(/* @type number */ i, /* @type number */ j) {
@@ -186,5 +198,7 @@ function debugState() {
   console.log("    ");
 }
 
-// partOne("input_09_small.txt");
-partTwo("input_09_small.txt");
+partOne("input_09_small.txt");
+// partOne("input_09.txt");
+// partTwo("input_09_larger.txt");
+// partTwo("input_09.txt");
