@@ -115,5 +115,17 @@ function getOperation(inputString) {
   };
 }
 
-// partOne("input_11_small.txt");
-partOne("input_11.txt");
+/**  LOG_LEVEL = 'DEBUG' | 'INFO' | 'RESULT';*/
+
+const [DEBUG, INFO, RESULT] = [0, 1, 2];
+
+const LOG_LEVEL = INFO;
+
+function log(level, text) {
+  if (level >= LOG_LEVEL) {
+    console.log(text);
+  }
+}
+
+partOne("input_11_small.txt");
+// partOne("input_11.txt");
