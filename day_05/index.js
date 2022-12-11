@@ -36,6 +36,30 @@ async function partOne(fileName, /**  @type string[][] */ crates) {
   }
 }
 
+async function partTwo(fileName, /**  @type string[][] */ crates) {
+  const movements = await getInput(fileName);
+
+  for (let move of movements) {
+    const [, count, , from, , to] = move.split(" ");
+
+    const fromCrate = crates[from - 1];
+    const toCrate = crates[to - 1];
+    if (!fromCrate) {
+      console.log(move);
+      console.log(crates);
+      return;
+    }
+    const pickedCrates = fromCrate.splice(fromCrate.length - count, count);
+    // pickedCrates.reverse();
+    toCrate.push(...pickedCrates);
+    console.log(move);
+    console.log(crates);
+  }
+
+  for (let crate of crates) {
+    console.log(crate.at(-1));
+  }
+}
 function parseCrates(/** @type string */ cratesInput) {
   const lines = cratesInput
     .split("\n")
@@ -85,4 +109,5 @@ CRATES["large"] = [
   ["M", "N", "Z", "W"],
 ];
 
-partOne("input_05.moves.txt", CRATES.large);
+// partOne("input_05.moves.txt", CRATES.large);
+partTwo("input_05.moves.txt", CRATES.large);
