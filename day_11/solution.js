@@ -67,6 +67,7 @@ const processMonkes2 = (monkeArray, iterations) => {
       monke.items.forEach((item) => {
         monke.lookedAtItems++;
         item = monke.operation(item);
+        console.log(item);
 
         if (item.statuses[monke.testDivisbleBy] === 0) {
           monkeArray[monke.targetTrue].items.push(item);
