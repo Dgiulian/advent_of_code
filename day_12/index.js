@@ -64,6 +64,45 @@ async function partOne(fileName) {
   const shortestPath = graph.shortestPath(start, end);
   console.log(shortestPath.length - 1);
 }
+async function partTwo(fileName) {
+  const lines = await getInput(fileName);
+  grid = parseGrid(lines);
+
+  const graph = new Graph();
+
+  for (let i = 0; i < grid.length; i++) {
+    for (let j = 0; j < grid[0].length; j++) {
+      const cell = grid[i][j];
+      const neighbors = getNeighbors([i, j]);
+      for (let neighbor of neighbors) {
+        graph.addEdge(flatId(i, j), flatId(...neighbor));
+      }
+    }
+  }
+
+  const startIds = [flatId(...findLocation("S"))];
+  const endId = flatId(...findLocation("E"));
+
+  startIds.push(...graph.nodes().filter((node) => node.endsWith("a")));
+
+  let i = 0;
+  const promises = startIds.map((id) => {
+    return new Promise((resolve) => {
+      try {
+        i += 1;
+        console.log("running for: " + i + "/" + startIds.length);
+        resolve(graph.shortestPath(id, endId).length - 1);
+      } catch (error) {
+        resolve(Infinity);
+      }
+    });
+  });
+  const distances = await Promise.all(promises);
+
+  const minDistance = distances.sort((a, b) => (a > b ? 1 : -1))[0];
+
+  console.log(minDistance);
+}
 
 function isAllowed(/** @type string */ ch1, /** @type string */ ch2) {
   if (ch1 == "S") {
@@ -107,6 +146,6 @@ function getNeighbors(currentPos) {
 partTwo("input_12_small.txt");
 
 // partOne("input_12.txt");
-// partTwo("input_12.txt");
+partTwo("input_12.txt");
 
 // test("input_12_small.txt");
