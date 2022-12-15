@@ -73,12 +73,19 @@ async function partOne(fileName) {
   }
   printGrid([500, 0]);
 }
+
 function printGrid(sandPosition) {
   if (!debug) return;
-  const grid = Array.from({ length: 10 }).map(() => Array.from({ length: 10 }));
+  const height = getMaxHeight();
+  const maxWidth = getMaxWidth();
+  const minWidth = getMinWidth();
+  const width = maxWidth - minWidth + 1;
+  const grid = Array.from({ length: height }).map(() =>
+    Array.from({ length: width })
+  );
   for (let i = 0; i < grid.length; i++) {
     for (let j = 0; j < grid[0].length; j++) {
-      const gridPosition = [j + 494, i];
+      const gridPosition = [j + minWidth, i];
       const id = flatId(...gridPosition);
       if (id === flatId(...sandPosition)) {
         grid[i][j] = "*";
@@ -125,8 +132,88 @@ function simulateSand() {
   }
   return true;
 }
+
+function getMaxHeight() {
+  const keys = [...occupiedPossitions.keys()];
+  const maxHeight = Math.max(...keys.map((position) => position.split(",")[1]));
+  return maxHeight + 2;
+}
+function getMaxWidth() {
+  const keys = [...occupiedPossitions.keys()];
+  const maxWidth = Math.max(...keys.map((position) => position.split(",")[0]));
+  return maxWidth;
+}
+function getMinWidth() {
+  const keys = [...occupiedPossitions.keys()];
+  const maxWidth = Math.min(...keys.map((position) => position.split(",")[0]));
+  return maxWidth;
+}
+
+async function partTwo(fileName) {
+  const input = await getInput(fileName);
+  for (let line of input) {
+    parsePositions(line);
+  }
+
+  const maxHeight = getMaxHeight();
+  let i = 1;
+  while (true) {
+    // debug = i > 22;
+    if (debug) console.log(`----${i}----`);
+    const flag = simulateSand2(maxHeight);
+    if (!flag) {
+      break;
+    }
+    i += 1;
+  }
+  console.log(i);
+
+  for (let k of rockPossitions.keys()) {
+    if (debug) console.log(k);
+  }
+  printGrid([500, 0]);
+}
+function simulateSand2(maxHeight) {
+  let sandPosition = [500, 0];
+  const moves = [
+    [0, 1],
+    [-1, 1],
+    [1, 1],
+  ];
+
+  let currentMove = 0;
+  let frame = 0;
+  while (true) {
+    printGrid(sandPosition);
+    frame++;
+    const move = moves[currentMove];
+    const nextPosition = [sandPosition[0] + move[0], sandPosition[1] + move[1]];
+    // if (nextPosition[0] < 0 || frame > 1000) return false;
+
+    // console.log(sandPosition, nextPosition);
+    if (
+      occupiedPossitions.has(flatId(...nextPosition)) ||
+      nextPosition[1] >= maxHeight
+    ) {
+      // Try next position
+      currentMove += 1;
+      if (currentMove >= moves.length) {
+        // Rest
+        occupiedPossitions.add(flatId(...sandPosition));
+        if (sandPosition[0] === 500 && sandPosition[1] === 0) return false;
+        break;
+      }
+    } else {
+      sandPosition = nextPosition;
+      currentMove = 0;
+    }
+  }
+  return true;
+}
 function flatId(i, j) {
   return `${i},${j}`;
 }
 // partOne("input_14_small.txt");
-partOne("input_14.txt");
+// partOne("input_14.txt");
+// partTwo("input_14_small.txt");
+partTwo("input_14.txt");
